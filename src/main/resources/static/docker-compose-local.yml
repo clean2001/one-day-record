@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: oneday-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      # 컨테이너가 시작될 때 지정된 데이터베이스가 자동으로 생성. 이미 있을 때는 아무것도 하지 않는다.
+      MYSQL_DATABASE: one_day_record
+    #      MYSQL_USER: root
+    #      MYSQL_PASSWORD: 1234
+    ports:
+      - "3303:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    container_name: oneday-redis
+    ports:
+      - "6376:6379"
+    volumes:
+      - redis_data:/data
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: oneday-rabbitmq
+    volumes:
+      - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+      - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+    ports:
+      - "5672:5672" # default port
+      - "15672:15672" # management port
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "RabbitMQ-${APP}"
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+volumes:
+  mariadb_data:
+  redis_data:
