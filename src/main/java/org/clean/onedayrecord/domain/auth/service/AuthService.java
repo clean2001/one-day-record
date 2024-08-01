@@ -115,4 +115,10 @@ public class AuthService {
         Member member = memberOpt.orElseThrow(() -> new BaseException(NO_VALID_MEMBER));
         member.updateDelYn(YesNo.Y);
     }
+
+    // social Id를 비밀번호처럼 취급
+    public String adminLogin(AdminLoginRequest adminLoginRequest) {
+        Member admin = memberRepository.findBySocialId(adminLoginRequest.getSocialId()).orElseThrow(() -> new BaseException(NO_VALID_MEMBER));
+        return jwtProvider.createAccessToken(admin.getId(), admin.getRole());
+    }
 }

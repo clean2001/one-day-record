@@ -21,7 +21,7 @@ public class SecurityConfig {
                 .httpBasic().disable()
                 .formLogin().disable()
                 .authorizeRequests()
-                .antMatchers("/api/auth/sign-in", "api/auth/reissue-token", "/api/presigned/**", "/api/auth/oauth/google")
+                .antMatchers("/api/auth/sign-in", "api/auth/reissue-token", "/api/presigned/**", "/api/auth/oauth/google", "/api/auth/admin/login")
                 .permitAll()
                 .anyRequest().authenticated().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()

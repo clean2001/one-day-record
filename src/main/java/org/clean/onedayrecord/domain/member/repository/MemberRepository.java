@@ -11,4 +11,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByIdAndDelYn(Long id, YesNo delYn);
 
+    Optional<Member> findBySocialId(String socialId);
 }

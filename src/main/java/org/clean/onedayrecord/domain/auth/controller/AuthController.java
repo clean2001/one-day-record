@@ -1,11 +1,13 @@
 package org.clean.onedayrecord.domain.auth.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.clean.onedayrecord.domain.auth.dto.AdminLoginRequest;
 import org.clean.onedayrecord.domain.auth.dto.GoogleResponse;
 import org.clean.onedayrecord.domain.auth.dto.SignInRequest;
 import org.clean.onedayrecord.domain.auth.dto.SignInResponse;
 import org.clean.onedayrecord.domain.auth.service.AuthService;
 import org.clean.onedayrecord.global.response.SuccessResponse;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +45,18 @@ public class AuthController{
         SuccessResponse response = SuccessResponse.builder()
                 .message("탈퇴되었습니다.")
                 .code(HttpStatus.OK.value())
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("admin/login")
+    public ResponseEntity<SuccessResponse> adminLogin(@RequestBody AdminLoginRequest adminLoginRequest) {
+        String accessToken = authService.adminLogin(adminLoginRequest);
+        SuccessResponse response = SuccessResponse.builder()
+                .message("관리자 로그인")
+                .code(HttpStatus.OK.value())
+                .data(accessToken)
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.OK);
