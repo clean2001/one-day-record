@@ -10,13 +10,14 @@ import org.clean.onedayrecord.domain.member.entity.Member;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Entity
-public class Story extends BaseEntity {
+public class Story extends BaseEntity implements Serializable { // Serializable 구현 (캐싱을 위해)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
