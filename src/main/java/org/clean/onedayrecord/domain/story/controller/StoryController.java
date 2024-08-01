@@ -46,6 +46,19 @@ public class StoryController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<SuccessResponse> getStory(@PathVariable Long id) {
+        StoryResponse story = storyService.getStory(id);
+
+        SuccessResponse response = SuccessResponse.builder()
+                .code(HttpStatus.CREATED.value())
+                .message("스토리 조회")
+                .data(story)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
     @DeleteMapping("/{id}/delete")
     public ResponseEntity<SuccessResponse> deleteStory(@PathVariable Long id) {
         storyService.deleteStory(id);

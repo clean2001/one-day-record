@@ -18,6 +18,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import javax.persistence.Cacheable;
+
 import static org.clean.onedayrecord.global.exception.exceptionType.MemberExceptionType.NO_VALID_MEMBER;
 import static org.clean.onedayrecord.global.exception.exceptionType.StoryExceptionType.*;
 
@@ -71,4 +74,62 @@ public class StoryService {
 
         story.updateDelYn(YesNo.Y);
     }
+
+    @Transactional
+    public StoryResponse getStory(Long id) {
+        Story story = storyRepository.findByIdAndDelYn(id, YesNo.N)
+                .orElseThrow(() -> new BaseException(NO_VALID_STORY));
+
+        return StoryResponse.fromEntity(story, story.getMember());
+    }
+
+    //== 캐싱 전용 메서드 ==//
+
+    public CreateStoryResponse createStoryCache(CreateStoryRequest createStoryRequest) {
+        Member member = memberRepository
+                .findByIdAndDelYn(mySecurityUtil.getMemberIdFromSecurity(), YesNo.N)
+                .orElseThrow(() -> new BaseException(NO_VALID_MEMBER));
+        Story story = CreateStoryRequest.toEntity(createStoryRequest, member);
+        Story savedStory = storyRepository.save(story);
+
+        return new CreateStoryResponse(savedStory.getId());
+    }
+
+//    @Cacheable(value = "Story", key = "#id")
+//    public Page<StoryResponse> getStoryListCache(Pageable pageable) {
+//        Page<Story> storyList = storyRepository.findAllByDelYnOrderByCreatedTimeDesc(pageable, YesNo.N);
+//
+//        return storyList.map(story -> {
+//            Member member = memberRepository.findByIdAndDelYn(story.getMember().getId(), YesNo.N)
+//                    .orElseThrow(() -> new BaseException(NO_VALID_MEMBER));
+//
+//            return StoryResponse.fromEntity(story, member);
+//        });
+//    }
+
+
+    @Transactional
+    public void deleteStoryCache(Long id) {
+        Member member = memberRepository
+                .findByIdAndDelYn(mySecurityUtil.getMemberIdFromSecurity(), YesNo.N)
+                .orElseThrow(() -> new BaseException(NO_VALID_MEMBER));
+
+        Story story = storyRepository.findByIdAndDelYn(id, YesNo.N)
+                .orElseThrow(() -> new BaseException(NO_VALID_STORY));
+
+        if(!story.getMember().equals(member)) {
+            throw new BaseException(CANNOT_DELETE);
+        }
+
+        story.updateDelYn(YesNo.Y);
+    }
+
+    @Transactional
+    public void deleteStoryForAdminCache(Long id) {
+        Story story = storyRepository.findByIdAndDelYn(id, YesNo.N)
+                .orElseThrow(() -> new BaseException(NO_VALID_STORY));
+
+        story.updateDelYn(YesNo.Y);
+    }
+
 }
