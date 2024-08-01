@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.clean.onedayrecord.domain.story.dto.CreateStoryRequest;
 import org.clean.onedayrecord.domain.story.dto.CreateStoryResponse;
 import org.clean.onedayrecord.domain.story.dto.StoryResponse;
+import org.clean.onedayrecord.domain.story.dto.UpdateStoryRequest;
 import org.clean.onedayrecord.domain.story.service.StoryService;
 import org.clean.onedayrecord.global.response.SuccessResponse;
 import org.springframework.data.domain.Page;
@@ -33,9 +34,10 @@ public class StoryController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    // 캐싱
     @GetMapping("/list")
     public ResponseEntity<SuccessResponse> getStoryList(@PageableDefault(size=10) Pageable pageable) {
-        Page<StoryResponse> storyList = storyService.getStoryList(pageable);
+        Page<StoryResponse> storyList = storyService.getStoryListCache(pageable);
 
         SuccessResponse response = SuccessResponse.builder()
                 .code(HttpStatus.CREATED.value())
@@ -46,8 +48,50 @@ public class StoryController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    // 캐싱
     @GetMapping("/{id}")
     public ResponseEntity<SuccessResponse> getStory(@PathVariable Long id) {
+        StoryResponse story = storyService.getStoryCache(id);
+
+        SuccessResponse response = SuccessResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("스토리 조회")
+                .data(story)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // 캐싱
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<SuccessResponse> deleteStory(@PathVariable Long id) {
+        storyService.deleteStoryCache(id);
+
+        SuccessResponse response = SuccessResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("스토리 삭제")
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // 캐싱 - 업데이트
+    @PatchMapping("/{id}/update")
+    public ResponseEntity<SuccessResponse> updateStory(@PathVariable Long id,
+                                                       @RequestBody UpdateStoryRequest updateStoryRequest) {
+        storyService.updateStory(id, updateStoryRequest);
+
+        SuccessResponse response = SuccessResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("업데이트 성공")
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/{id}/rdb")
+    public ResponseEntity<SuccessResponse> getStoryRdb(@PathVariable Long id) {
         StoryResponse story = storyService.getStory(id);
 
         SuccessResponse response = SuccessResponse.builder()
@@ -59,24 +103,12 @@ public class StoryController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{id}/delete")
-    public ResponseEntity<SuccessResponse> deleteStory(@PathVariable Long id) {
-        storyService.deleteStory(id);
-
-        SuccessResponse response = SuccessResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message("스토리 삭제")
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
 
     //== 관리자는 특정 글을 삭제할 수 있음 ==//
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/delete-by-admin")
     public ResponseEntity<SuccessResponse> deleteStoryForAdmin(@PathVariable Long id) {
-        storyService.deleteStoryForAdmin(id);
+        storyService.deleteStoryForAdminCache(id);
 
         SuccessResponse response = SuccessResponse.builder()
                 .code(HttpStatus.OK.value())

@@ -7,6 +7,7 @@ import org.clean.onedayrecord.domain.member.repository.MemberRepository;
 import org.clean.onedayrecord.domain.story.dto.CreateStoryRequest;
 import org.clean.onedayrecord.domain.story.dto.CreateStoryResponse;
 import org.clean.onedayrecord.domain.story.dto.StoryResponse;
+import org.clean.onedayrecord.domain.story.dto.UpdateStoryRequest;
 import org.clean.onedayrecord.domain.story.entity.Story;
 import org.clean.onedayrecord.domain.story.repository.StoryRepository;
 import org.clean.onedayrecord.global.exception.BaseException;
@@ -111,8 +112,7 @@ public class StoryService {
         return StoryResponse.fromEntity(story, story.getMember());
     }
 
-//    @Cacheable(value = "storyCache", key = "#id", unless = "#result == null", cacheManager = "cacheManager")
-    @Cacheable(value = "storyCache", key = "#id")
+//    @Cacheable(value = "storyCache", key = "#id")
     public Page<StoryResponse> getStoryListCache(Pageable pageable) {
         Page<Story> storyList = storyRepository.findAllByDelYnOrderByCreatedTimeDesc(pageable, YesNo.N);
 
@@ -122,6 +122,17 @@ public class StoryService {
 
             return StoryResponse.fromEntity(story, member);
         });
+    }
+
+    @CachePut(value = "storyCache", key = "#storyId")
+    @Transactional
+    public void updateStory(Long storyId, UpdateStoryRequest updateStoryRequest) {
+        // 검증
+
+        Story story = storyRepository.findByIdAndDelYn(storyId, YesNo.N)
+                .orElseThrow(() -> new BaseException(NO_VALID_STORY));
+
+        story.updateStory(updateStoryRequest);
     }
 
     @CacheEvict(value = "storyCache", key = "#id")
