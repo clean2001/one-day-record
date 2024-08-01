@@ -102,7 +102,7 @@ public class StoryService {
         return StoryResponse.fromEntity(story, story.getMember());
     }
 
-//    @Cacheable(value = "storyCache", key = "#id")
+//    @Cacheable(value = "storyCache", key = "#result.id")
     public Page<StoryResponse> getStoryListCache(Pageable pageable) {
         Page<Story> storyList = storyRepository.findAllByDelYnOrderByCreatedTimeDesc(pageable, YesNo.N);
 
