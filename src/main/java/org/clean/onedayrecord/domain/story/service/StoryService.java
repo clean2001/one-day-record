@@ -92,16 +92,6 @@ public class StoryService {
 
 
     //==== 캐싱 전용 메서드 ====//
-    @CachePut(value = "storyCache", key = "#story.id")
-    public CreateStoryResponse createStoryCache(CreateStoryRequest createStoryRequest) {
-        Member member = memberRepository
-                .findByIdAndDelYn(mySecurityUtil.getMemberIdFromSecurity(), YesNo.N)
-                .orElseThrow(() -> new BaseException(NO_VALID_MEMBER));
-        Story story = CreateStoryRequest.toEntity(createStoryRequest, member);
-        Story savedStory = storyRepository.save(story);
-
-        return new CreateStoryResponse(savedStory.getId());
-    }
 
     @Cacheable(value = "storyCache", key = "#id", cacheManager = "cacheManager")
     @Transactional
@@ -124,18 +114,20 @@ public class StoryService {
         });
     }
 
-    @CachePut(value = "storyCache", key = "#storyId")
+    @CachePut(value = "storyCache", key = "#result.id", cacheManager = "cacheManager")
     @Transactional
-    public void updateStory(Long storyId, UpdateStoryRequest updateStoryRequest) {
+    public StoryResponse updateStory(Long storyId, UpdateStoryRequest updateStoryRequest) {
         // 검증
 
         Story story = storyRepository.findByIdAndDelYn(storyId, YesNo.N)
                 .orElseThrow(() -> new BaseException(NO_VALID_STORY));
 
         story.updateStory(updateStoryRequest);
+
+        return StoryResponse.fromEntity(story, story.getMember()); // 이걸 써줘야하는 것 같은데
     }
 
-    @CacheEvict(value = "storyCache", key = "#id")
+    @CacheEvict(value = "storyCache", key = "#id", cacheManager = "cacheManager")
     @Transactional
     public void deleteStoryCache(Long id) {
         Member member = memberRepository
@@ -152,13 +144,18 @@ public class StoryService {
         story.updateDelYn(YesNo.Y);
     }
 
-    @CacheEvict(value = "storyCache", key = "#id")
+    @CacheEvict(value = "storyCache", key = "#id", cacheManager = "cacheManager")
     @Transactional
     public void deleteStoryForAdminCache(Long id) {
         Story story = storyRepository.findByIdAndDelYn(id, YesNo.N)
                 .orElseThrow(() -> new BaseException(NO_VALID_STORY));
 
         story.updateDelYn(YesNo.Y);
+    }
+
+    @Cacheable(value = "storyCache", key = "#id", cacheManager = "cacheManager")
+    public Story findStory(Long id) {
+        return storyRepository.findByIdAndDelYn(id, YesNo.N).orElseThrow(() -> new BaseException(NO_VALID_STORY));
     }
 
 }
