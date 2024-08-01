@@ -14,6 +14,7 @@ import org.clean.onedayrecord.global.exception.exceptionType.StoryExceptionType;
 import org.clean.onedayrecord.global.util.MySecurityUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +60,14 @@ public class StoryService {
         if(!story.getMember().equals(member)) {
             throw new BaseException(CANNOT_DELETE);
         }
+
+        story.updateDelYn(YesNo.Y);
+    }
+
+    @Transactional
+    public void deleteStoryForAdmin(Long id) {
+        Story story = storyRepository.findByIdAndDelYn(id, YesNo.N)
+                .orElseThrow(() -> new BaseException(NO_VALID_STORY));
 
         story.updateDelYn(YesNo.Y);
     }

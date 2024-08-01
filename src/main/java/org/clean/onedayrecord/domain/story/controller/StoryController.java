@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,6 +53,21 @@ public class StoryController {
         SuccessResponse response = SuccessResponse.builder()
                 .code(HttpStatus.OK.value())
                 .message("스토리 삭제")
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+    //== 관리자는 특정 글을 삭제할 수 있음 ==//
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}/delete-by-admin")
+    public ResponseEntity<SuccessResponse> deleteStoryForAdmin(@PathVariable Long id) {
+        storyService.deleteStoryForAdmin(id);
+
+        SuccessResponse response = SuccessResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("[관리자] 성공적으로 스토리를 삭제했습니다.")
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.OK);
